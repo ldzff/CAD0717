@@ -3982,7 +3982,12 @@ namespace RobTeach.Views
                 // 2.a. Number of Primitives in Pass
                 int totalPrimitives = pass.Trajectories.Sum(t => {
                     if (t.PrimitiveType != "Polygon") return 1;
-                    return t.Points.Count > 1 ? t.Points.Count - 1 : 0;
+                    int segmentCount = t.Points.Count > 1 ? t.Points.Count - 1 : 0;
+                    if (t.OriginalDxfEntity is DxfLwPolyline polyline && polyline.IsClosed && t.Points.Count > 2)
+                    {
+                        segmentCount++;
+                    }
+                    return segmentCount;
                 });
                 dataQueue.Enqueue((float)totalPrimitives);
 
@@ -4082,48 +4087,34 @@ namespace RobTeach.Views
                     }
                     else if (trajectory.PrimitiveType == "Polygon" && trajectory.Points.Count > 1)
                     {
-                        // Calculate the uniform speed for the entire polyline
-                        double totalLength = TrajectoryUtils.CalculateTrajectoryLength(trajectory);
+                        var points = trajectory.Points;
+                        // Calculate the total length of the polygon
+                        double totalLength = 0;
+                        for (int i = 0; i < points.Count - 1; i++)
+                        {
+                            totalLength += Math.Sqrt((points[i+1] - points[i]).LengthSquared());
+                        }
+                        if (trajectory.OriginalDxfEntity is DxfLwPolyline polyline && polyline.IsClosed && points.Count > 2)
+                        {
+                            totalLength += Math.Sqrt((points[points.Count - 1] - points[0]).LengthSquared());
+                        }
+
+                        // Calculate uniform speed for the entire polygon
                         float uniformSpeed = 0.0f;
-                        if (trajectory.Runtime > 0.00001 && totalLength > 0.00001)
+                        if (totalLength > 0.00001 && trajectory.Runtime > 0.00001)
                         {
-                            uniformSpeed = (float)(totalLength / trajectory.Runtime);
+                            uniformSpeed = (float)(totalLength / trajectory.Runtime / 1000.0); // Assuming length is in mm and runtime in seconds, speed in m/s
                         }
-
-                        for (int i = 0; i < trajectory.Points.Count - 1; i++)
+                        for (int i = 0; i < points.Count - 1; i++)
                         {
-                            Point3D startPoint = new Point3D(trajectory.Points[i].X, trajectory.Points[i].Y, trajectory.PolygonZ);
-                            Point3D endPoint = new Point3D(trajectory.Points[i + 1].X, trajectory.Points[i + 1].Y, trajectory.PolygonZ);
-
                             primitiveIndexInPass++;
-                            // 2.b.i. Primitive Index
-                            dataQueue.Enqueue((float)primitiveIndexInPass);
-                            // 2.b.ii. Primitive Type (Line)
-                            dataQueue.Enqueue(1.0f);
-
-                            // 2.b.iii-vi. Nozzle Settings (from parent polygon)
-                            dataQueue.Enqueue(trajectory.UpperNozzleGasOn ? 11.0f : 10.0f);
-                            dataQueue.Enqueue(trajectory.UpperNozzleLiquidOn ? 12.0f : 10.0f);
-                            dataQueue.Enqueue(trajectory.LowerNozzleGasOn ? 21.0f : 20.0f);
-                            dataQueue.Enqueue(trajectory.LowerNozzleLiquidOn ? 22.0f : 20.0f);
-
-                            // 2.b.vii. End Effector Speed (use the pre-calculated uniform speed)
-                            dataQueue.Enqueue(uniformSpeed);
-
-                            // 2.b.viii. Primitive Geometry Data (Line)
-                            dataQueue.Enqueue((float)startPoint.X);
-                            dataQueue.Enqueue((float)startPoint.Y);
-                            dataQueue.Enqueue((float)startPoint.Z);
-                            dataQueue.Enqueue(0f); dataQueue.Enqueue(0f); dataQueue.Enqueue(0f);
-                            dataQueue.Enqueue((float)endPoint.X);
-                            dataQueue.Enqueue((float)endPoint.Y);
-                            dataQueue.Enqueue((float)endPoint.Z);
-                            dataQueue.Enqueue(0f); dataQueue.Enqueue(0f); dataQueue.Enqueue(0f);
-
-                            // Filler data
-                            for (int j = 0; j < 3; j++) dataQueue.Enqueue(0.0f);
+                            EnqueueLineSegmentDataForLog(dataQueue, trajectory, points[i], points[i+1], primitiveIndexInPass, uniformSpeed);
                         }
-
+                        if (trajectory.OriginalDxfEntity is DxfLwPolyline polyline2 && polyline2.IsClosed && points.Count > 2)
+                        {
+                            primitiveIndexInPass++;
+                            EnqueueLineSegmentDataForLog(dataQueue, trajectory, points[points.Count - 1], points[0], primitiveIndexInPass, uniformSpeed);
+                        }
                     }
 
                     if (trajectory.PrimitiveType != "Polygon")
@@ -4145,6 +4136,36 @@ namespace RobTeach.Views
             }
 
             return dataFilePath; // Return the actual path where the file is saved
+        }
+
+        private void EnqueueLineSegmentDataForLog(Queue<float> queue, Trajectory parentTrajectory, Point3D start, Point3D end, int primitiveIndex, float uniformSpeed)
+        {
+            // 2.b.i. Primitive Index
+            queue.Enqueue((float)primitiveIndex);
+            // 2.b.ii. Primitive Type (Line)
+            queue.Enqueue(1.0f);
+
+            // 2.b.iii-vi. Nozzle Settings (from parent polygon)
+            queue.Enqueue(parentTrajectory.UpperNozzleGasOn ? 11.0f : 10.0f);
+            queue.Enqueue(parentTrajectory.UpperNozzleLiquidOn ? 12.0f : 10.0f);
+            queue.Enqueue(parentTrajectory.LowerNozzleGasOn ? 21.0f : 20.0f);
+            queue.Enqueue(parentTrajectory.LowerNozzleLiquidOn ? 22.0f : 20.0f);
+
+            // 2.b.vii. End Effector Speed (use the pre-calculated uniform speed)
+            queue.Enqueue(uniformSpeed);
+
+            // 2.b.viii. Primitive Geometry Data (Line)
+            queue.Enqueue((float)start.X);
+            queue.Enqueue((float)start.Y);
+            queue.Enqueue((float)start.Z);
+            queue.Enqueue(0f); queue.Enqueue(0f); queue.Enqueue(0f);
+            queue.Enqueue((float)end.X);
+            queue.Enqueue((float)end.Y);
+            queue.Enqueue((float)end.Z);
+            queue.Enqueue(0f); queue.Enqueue(0f); queue.Enqueue(0f);
+
+            // Filler data
+            for (int j = 0; j < 3; j++) queue.Enqueue(0.0f);
         }
 
         private void StartTestRunButton_Click(object sender, RoutedEventArgs e)
