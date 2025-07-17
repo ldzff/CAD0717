@@ -4,6 +4,7 @@ using RobTeach.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using IxMilia.Dxf.Entities;
 
@@ -255,6 +256,9 @@ namespace RobTeach.Services
 
             try
             {
+                // Log the data before sending
+                LogSentData(new Queue<float>(dataQueue));
+
                 int currentAddress = 4000;
                 var registers = new List<int>();
                 while(dataQueue.Count > 0)
@@ -293,6 +297,31 @@ namespace RobTeach.Services
         }
 
         /// <summary>
+        private void LogSentData(Queue<float> dataQueue)
+        {
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string logDirectory = Path.Combine(baseDirectory, "log");
+
+            // Ensure the log directory exists
+            if (!Directory.Exists(logDirectory))
+            {
+                Directory.CreateDirectory(logDirectory);
+            }
+
+            string dataFileName = $"RobTeach_SendData_{DateTime.Now:yyyyMMdd_HHmmss_fff}.txt";
+            string dataFilePath = Path.Combine(logDirectory, dataFileName);
+
+            using (StreamWriter writer = new StreamWriter(dataFilePath))
+            {
+                int currentAddress = 4000;
+                while (dataQueue.Count > 0)
+                {
+                    float data = dataQueue.Dequeue();
+                    writer.WriteLine($"{data.ToString("F3")}  (Address: {currentAddress})");
+                    currentAddress++;
+                }
+            }
+        }
         /// Reads a single 16-bit signed integer from a Modbus holding register.
         /// </summary>
         /// <param name="address">The Modbus address (0-based) of the holding register to read.</param>
