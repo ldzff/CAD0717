@@ -256,6 +256,14 @@ namespace RobTeach.Services
 
             try
             {
+                // Calculate checksum
+                float checksum = 0;
+                foreach (var item in dataQueue)
+                {
+                    checksum += item;
+                }
+                dataQueue.Enqueue(checksum);
+
                 // Log the data before sending
                 LogSentData(new Queue<float>(dataQueue));
 
