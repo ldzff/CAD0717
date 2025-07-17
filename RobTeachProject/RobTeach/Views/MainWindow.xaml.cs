@@ -254,8 +254,7 @@ namespace RobTeach.Views
                 TrajectoryLowerNozzleLiquidOnCheckBox.Content = "石墨水开启";
                 GeometryGroupBox.Header = "选定轨迹 - 几何形状";
                 TrajectoryIsReversedCheckBox.Content = "反转方向";
-                LineStartZLabel.Content = "起点Z:";
-                LineEndZLabel.Content = "终点Z:";
+                LineZLabel.Content = "Z:";
                 ArcCenterZLabel.Content = "圆心Z:";
                 CircleCenterZLabel.Content = "圆心Z:";
                 PolygonZLabel.Content = "Z:";
@@ -300,8 +299,7 @@ namespace RobTeach.Views
                 TrajectoryLowerNozzleLiquidOnCheckBox.Content = "Liquid On";
                 GeometryGroupBox.Header = "Selected Trajectory - Geometry";
                 TrajectoryIsReversedCheckBox.Content = "Reverse Direction";
-                LineStartZLabel.Content = "Start Z:";
-                LineEndZLabel.Content = "End Z:";
+                LineZLabel.Content = "Z:";
                 ArcCenterZLabel.Content = "Center Z:";
                 CircleCenterZLabel.Content = "Center Z:";
                 PolygonZLabel.Content = "Z:";
@@ -823,7 +821,8 @@ namespace RobTeach.Views
 
                 if (selectedTrajectory.PrimitiveType == "Line")
                 {
-                    LineZTextBox.Text = selectedTrajectory.LineStartPoint.Z.ToString("F3");
+                    LineStartZTextBox.Text = selectedTrajectory.LineStartPoint.Z.ToString("F3");
+                    LineEndZTextBox.Text = selectedTrajectory.LineStartPoint.Z.ToString("F3");
                 }
                 else if (selectedTrajectory.PrimitiveType == "Arc")
                 {
@@ -850,7 +849,8 @@ namespace RobTeach.Views
                 }
 
                 // Set Tags for Z-coordinate TextBoxes
-                LineZTextBox.Tag = selectedTrajectory;
+                LineStartZTextBox.Tag = selectedTrajectory;
+                LineEndZTextBox.Tag = selectedTrajectory;
                 ArcCenterZTextBox.Tag = selectedTrajectory;
                 CircleCenterZTextBox.Tag = selectedTrajectory; // Still use CircleCenterZTextBox for the tag
                 PolygonZTextBox.Tag = selectedTrajectory;
@@ -899,12 +899,14 @@ namespace RobTeach.Views
                 ArcHeightControlsPanel.Visibility = Visibility.Collapsed;
                 CircleHeightControlsPanel.Visibility = Visibility.Collapsed;
                 PolygonHeightControlsPanel.Visibility = Visibility.Collapsed;
-                LineZTextBox.Text = string.Empty;
+                LineStartZTextBox.Text = string.Empty;
+                LineEndZTextBox.Text = string.Empty;
                 ArcCenterZTextBox.Text = string.Empty;
                 CircleCenterZTextBox.Text = string.Empty;
 
                 // Clear Tags for Z-coordinate TextBoxes
-                LineZTextBox.Tag = null;
+                LineStartZTextBox.Tag = null;
+                LineEndZTextBox.Tag = null;
                 ArcCenterZTextBox.Tag = null;
                 CircleCenterZTextBox.Tag = null;
                 PolygonZTextBox.Tag = null;
@@ -1361,16 +1363,15 @@ namespace RobTeach.Views
             }
         }
 
-    private void UpdateLineZFromTextBox()
+    private void UpdateLineStartZFromTextBox()
     {
         if (_trajectoryInDetailView != null && _trajectoryInDetailView.PrimitiveType == "Line")
         {
-            if (double.TryParse(LineZTextBox.Text, out double newZ))
+            if (double.TryParse(LineStartZTextBox.Text, out double newZ))
             {
-                if (_trajectoryInDetailView.LineStartPoint.Z != newZ || _trajectoryInDetailView.LineEndPoint.Z != newZ)
+                if (_trajectoryInDetailView.LineStartPoint.Z != newZ)
                 {
-                    double oldStartZ = _trajectoryInDetailView.LineStartPoint.Z;
-                    double oldEndZ = _trajectoryInDetailView.LineEndPoint.Z;
+                    double oldZ = _trajectoryInDetailView.LineStartPoint.Z;
                     _trajectoryInDetailView.LineStartPoint = new DxfPoint(
                         _trajectoryInDetailView.LineStartPoint.X,
                         _trajectoryInDetailView.LineStartPoint.Y,
@@ -1379,7 +1380,7 @@ namespace RobTeach.Views
                         _trajectoryInDetailView.LineEndPoint.X,
                         _trajectoryInDetailView.LineEndPoint.Y,
                         newZ);
-                    AppLogger.Log($"Trajectory '{_trajectoryInDetailView.ToString()}' Line Z changed from {oldStartZ:F3}/{oldEndZ:F3} to {newZ:F3} in pass '{_currentConfiguration.SprayPasses[_currentConfiguration.CurrentPassIndex].PassName}'.");
+                    AppLogger.Log($"Trajectory '{_trajectoryInDetailView.ToString()}' Line Z changed from {oldZ:F3} to {newZ:F3} in pass '{_currentConfiguration.SprayPasses[_currentConfiguration.CurrentPassIndex].PassName}'.");
                     isConfigurationDirty = true;
                     CurrentPassTrajectoriesListBox.Items.Refresh(); // Refresh if Z might be part of ToString()
                 }
@@ -1389,14 +1390,24 @@ namespace RobTeach.Views
                 string msg = "Invalid Z value. Please enter a valid number.";
                 AppLogger.Log(msg, LogLevel.Error);
                 MessageBox.Show(msg, "Input Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                LineZTextBox.Text = _trajectoryInDetailView.LineStartPoint.Z.ToString("F3");
+                LineStartZTextBox.Text = _trajectoryInDetailView.LineStartPoint.Z.ToString("F3");
             }
         }
     }
 
-    private void LineZTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void UpdateLineEndZFromTextBox()
     {
-        UpdateLineZFromTextBox();
+        // This method is now empty as the UI for it is hidden.
+    }
+
+    private void LineStartZTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateLineStartZFromTextBox();
+    }
+
+    private void LineEndZTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateLineEndZFromTextBox();
     }
 
     private void UpdateArcCenterZFromTextBox()
