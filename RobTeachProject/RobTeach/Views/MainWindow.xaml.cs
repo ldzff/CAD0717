@@ -254,7 +254,7 @@ namespace RobTeach.Views
                 TrajectoryLowerNozzleLiquidOnCheckBox.Content = "石墨水开启";
                 GeometryGroupBox.Header = "选定轨迹 - 几何形状";
                 TrajectoryIsReversedCheckBox.Content = "反转方向";
-                LineZLabel.Content = "Z:";
+                LineStartZLabel.Content = "Z:";
                 ArcCenterZLabel.Content = "圆心Z:";
                 CircleCenterZLabel.Content = "圆心Z:";
                 PolygonZLabel.Content = "Z:";
@@ -299,7 +299,7 @@ namespace RobTeach.Views
                 TrajectoryLowerNozzleLiquidOnCheckBox.Content = "Liquid On";
                 GeometryGroupBox.Header = "Selected Trajectory - Geometry";
                 TrajectoryIsReversedCheckBox.Content = "Reverse Direction";
-                LineZLabel.Content = "Z:";
+                LineStartZLabel.Content = "Z:";
                 ArcCenterZLabel.Content = "Center Z:";
                 CircleCenterZLabel.Content = "Center Z:";
                 PolygonZLabel.Content = "Z:";
