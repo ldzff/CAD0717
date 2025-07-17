@@ -823,8 +823,7 @@ namespace RobTeach.Views
 
                 if (selectedTrajectory.PrimitiveType == "Line")
                 {
-                    LineStartZTextBox.Text = selectedTrajectory.LineStartPoint.Z.ToString("F3");
-                    LineEndZTextBox.Text = selectedTrajectory.LineEndPoint.Z.ToString("F3");
+                    LineZTextBox.Text = selectedTrajectory.LineStartPoint.Z.ToString("F3");
                 }
                 else if (selectedTrajectory.PrimitiveType == "Arc")
                 {
@@ -851,8 +850,7 @@ namespace RobTeach.Views
                 }
 
                 // Set Tags for Z-coordinate TextBoxes
-                LineStartZTextBox.Tag = selectedTrajectory;
-                LineEndZTextBox.Tag = selectedTrajectory;
+                LineZTextBox.Tag = selectedTrajectory;
                 ArcCenterZTextBox.Tag = selectedTrajectory;
                 CircleCenterZTextBox.Tag = selectedTrajectory; // Still use CircleCenterZTextBox for the tag
                 PolygonZTextBox.Tag = selectedTrajectory;
@@ -901,14 +899,12 @@ namespace RobTeach.Views
                 ArcHeightControlsPanel.Visibility = Visibility.Collapsed;
                 CircleHeightControlsPanel.Visibility = Visibility.Collapsed;
                 PolygonHeightControlsPanel.Visibility = Visibility.Collapsed;
-                LineStartZTextBox.Text = string.Empty;
-                LineEndZTextBox.Text = string.Empty;
+                LineZTextBox.Text = string.Empty;
                 ArcCenterZTextBox.Text = string.Empty;
                 CircleCenterZTextBox.Text = string.Empty;
 
                 // Clear Tags for Z-coordinate TextBoxes
-                LineStartZTextBox.Tag = null;
-                LineEndZTextBox.Tag = null;
+                LineZTextBox.Tag = null;
                 ArcCenterZTextBox.Tag = null;
                 CircleCenterZTextBox.Tag = null;
                 PolygonZTextBox.Tag = null;
@@ -1365,79 +1361,43 @@ namespace RobTeach.Views
             }
         }
 
-    private void UpdateLineStartZFromTextBox()
+    private void UpdateLineZFromTextBox()
     {
         if (_trajectoryInDetailView != null && _trajectoryInDetailView.PrimitiveType == "Line")
         {
-            if (double.TryParse(LineStartZTextBox.Text, out double newZ))
+            if (double.TryParse(LineZTextBox.Text, out double newZ))
             {
-                if (_trajectoryInDetailView.LineStartPoint.Z != newZ)
+                if (_trajectoryInDetailView.LineStartPoint.Z != newZ || _trajectoryInDetailView.LineEndPoint.Z != newZ)
                 {
-                    double oldZ = _trajectoryInDetailView.LineStartPoint.Z;
+                    double oldStartZ = _trajectoryInDetailView.LineStartPoint.Z;
+                    double oldEndZ = _trajectoryInDetailView.LineEndPoint.Z;
                     _trajectoryInDetailView.LineStartPoint = new DxfPoint(
                         _trajectoryInDetailView.LineStartPoint.X,
                         _trajectoryInDetailView.LineStartPoint.Y,
                         newZ);
-                    AppLogger.Log($"Trajectory '{_trajectoryInDetailView.ToString()}' LineStartPoint.Z changed from {oldZ:F3} to {newZ:F3} in pass '{_currentConfiguration.SprayPasses[_currentConfiguration.CurrentPassIndex].PassName}'.");
-                    isConfigurationDirty = true;
-                    CurrentPassTrajectoriesListBox.Items.Refresh(); // Refresh if Z might be part of ToString()
-                }
-            }
-            else
-            {
-                string msg = "Invalid Start Z value. Please enter a valid number.";
-                AppLogger.Log(msg, LogLevel.Error);
-                MessageBox.Show(msg, "Input Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                LineStartZTextBox.Text = _trajectoryInDetailView.LineStartPoint.Z.ToString("F3");
-            }
-        }
-    }
-
-    private void LineStartZTextBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        UpdateLineStartZFromTextBox();
-    }
-
-    // Removed LineStartZTextBox_LostFocus
-
-    // CalculateArcParametersFromThreePoints MOVED to RobTeach.Utils.GeometryUtils
-
-    // Removed LineStartZTextBox_LostFocus
-
-    private void UpdateLineEndZFromTextBox()
-    {
-        if (_trajectoryInDetailView != null && _trajectoryInDetailView.PrimitiveType == "Line")
-        {
-            if (double.TryParse(LineEndZTextBox.Text, out double newZ))
-            {
-                if (_trajectoryInDetailView.LineEndPoint.Z != newZ)
-                {
-                    double oldZ = _trajectoryInDetailView.LineEndPoint.Z;
                     _trajectoryInDetailView.LineEndPoint = new DxfPoint(
                         _trajectoryInDetailView.LineEndPoint.X,
                         _trajectoryInDetailView.LineEndPoint.Y,
                         newZ);
-                    AppLogger.Log($"Trajectory '{_trajectoryInDetailView.ToString()}' LineEndPoint.Z changed from {oldZ:F3} to {newZ:F3} in pass '{_currentConfiguration.SprayPasses[_currentConfiguration.CurrentPassIndex].PassName}'.");
+                    AppLogger.Log($"Trajectory '{_trajectoryInDetailView.ToString()}' Line Z changed from {oldStartZ:F3}/{oldEndZ:F3} to {newZ:F3} in pass '{_currentConfiguration.SprayPasses[_currentConfiguration.CurrentPassIndex].PassName}'.");
                     isConfigurationDirty = true;
                     CurrentPassTrajectoriesListBox.Items.Refresh(); // Refresh if Z might be part of ToString()
                 }
             }
             else
             {
-                string msg = "Invalid End Z value. Please enter a valid number.";
+                string msg = "Invalid Z value. Please enter a valid number.";
                 AppLogger.Log(msg, LogLevel.Error);
                 MessageBox.Show(msg, "Input Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                LineEndZTextBox.Text = _trajectoryInDetailView.LineEndPoint.Z.ToString("F3");
+                LineZTextBox.Text = _trajectoryInDetailView.LineStartPoint.Z.ToString("F3");
             }
         }
     }
 
-    private void LineEndZTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void LineZTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        UpdateLineEndZFromTextBox();
+        UpdateLineZFromTextBox();
     }
-
-    // Removed LineEndZTextBox_LostFocus
 
     private void UpdateArcCenterZFromTextBox()
     {

@@ -102,10 +102,8 @@
                     <StackPanel Orientation="Vertical">
                         <CheckBox Name="TrajectoryIsReversedCheckBox" Content="Reverse Direction" Margin="2" Foreground="{StaticResource DefaultTextBrush}"/>
                         <StackPanel Name="LineHeightControlsPanel" Orientation="Horizontal" Visibility="Collapsed" Margin="2">
-                            <Label x:Name="LineStartZLabel" Content="Start Z:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
-                            <TextBox Name="LineStartZTextBox" Width="50" IsReadOnly="False" VerticalAlignment="Center" Margin="2,0" TextChanged="LineStartZTextBox_TextChanged"/>
-                            <Label x:Name="LineEndZLabel" Content="End Z:" VerticalAlignment="Center" Margin="5,0,0,0" Foreground="{StaticResource DefaultTextBrush}"/>
-                            <TextBox Name="LineEndZTextBox" Width="50" IsReadOnly="False" VerticalAlignment="Center" Margin="2,0" TextChanged="LineEndZTextBox_TextChanged"/>
+                            <Label x:Name="LineZLabel" Content="Z:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+                            <TextBox Name="LineZTextBox" Width="50" IsReadOnly="False" VerticalAlignment="Center" Margin="2,0" TextChanged="LineZTextBox_TextChanged"/>
                         </StackPanel>
                         <StackPanel Name="ArcHeightControlsPanel" Orientation="Horizontal" Visibility="Collapsed" Margin="2">
                             <Label x:Name="ArcCenterZLabel" Content="Center Z:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
