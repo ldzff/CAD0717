@@ -2047,32 +2047,30 @@ namespace RobTeach.Views
                             DxfPoint center = circle.Center;
                             double radius = circle.Radius;
 
+                            // Final corrected logic: Define local axes based on world coordinates to match user expectation
+                            // The local X axis is now always aligned with the world X-Y plane's X direction, unless the circle is vertical.
                             DxfVector localXAxis;
-                            double arbThreshold = 1.0 / 64.0;
-
-                            if (Math.Abs(normal.X) < arbThreshold && Math.Abs(normal.Y) < arbThreshold)
+                            if (Math.Abs(normal.Z) > 0.999) // Circle is mostly flat on XY plane
                             {
-                                localXAxis = (new DxfVector(0, 1, 0)).Cross(normal).Normalize();
+                                localXAxis = DxfVector.XAxis;
                             }
-                            else
+                            else // Tilted or vertical circle
                             {
                                 localXAxis = (DxfVector.ZAxis).Cross(normal).Normalize();
                             }
                             DxfVector localYAxis = normal.Cross(localXAxis).Normalize();
 
-                            // Corrected logic to find the bottom-left intersection point
-                            // The angle for the bottom-left point (225 degrees or -135 degrees) is used to find the offset vector.
-                            double angleP1_rad = -135.0 * Math.PI / 180.0; // -135 degrees in radians
+                            // The angle for the bottom-left point is consistently -135 degrees (225 deg) in this local system
+                            double angleP1_rad = -135.0 * Math.PI / 180.0;
 
-                            // Calculate the offset vector for the first point in the circle's local coordinate system
+                            // Calculate the offset vector for the first point
                             DxfVector p1_offset_vec = (localXAxis * (radius * Math.Cos(angleP1_rad))) + (localYAxis * (radius * Math.Sin(angleP1_rad)));
                             newTrajectory.CirclePoint1.Coordinates = center + p1_offset_vec;
 
-                            // P2 and P3 are rotated by 120 and 240 degrees from P1's angle.
+                            // Calculate P2 and P3 by rotating from the first point's angle
                             double angleP2_rad = angleP1_rad + (120.0 * Math.PI / 180.0);
                             double angleP3_rad = angleP1_rad + (240.0 * Math.PI / 180.0);
 
-                            // Calculate offset vectors for P2 and P3
                             DxfVector p2_offset_vec = (localXAxis * (radius * Math.Cos(angleP2_rad))) + (localYAxis * (radius * Math.Sin(angleP2_rad)));
                             DxfVector p3_offset_vec = (localXAxis * (radius * Math.Cos(angleP3_rad))) + (localYAxis * (radius * Math.Sin(angleP3_rad)));
 
@@ -3250,47 +3248,35 @@ namespace RobTeach.Views
                                     DxfVector marquee_normal = circle.Normal.Normalize();
                                     DxfPoint marquee_center = circle.Center;
                                     double marquee_radius = circle.Radius;
-                                    DxfVector marquee_localXAxis;
-                                    double marquee_arbThreshold = 1.0 / 64.0;
+                                    DxfVector marquee_normal = circle.Normal.Normalize();
+                                    DxfPoint marquee_center = circle.Center;
+                                    double marquee_radius = circle.Radius;
 
-                                    if (Math.Abs(marquee_normal.X) < marquee_arbThreshold && Math.Abs(marquee_normal.Y) < marquee_arbThreshold)
+                                    // Applying the final corrected logic to the marquee selection as well
+                                    DxfVector marquee_localXAxis;
+                                    if (Math.Abs(marquee_normal.Z) > 0.999) // Circle is mostly flat on XY plane
                                     {
-                                        marquee_localXAxis = (new DxfVector(0, 1, 0)).Cross(marquee_normal).Normalize();
+                                        marquee_localXAxis = DxfVector.XAxis;
                                     }
-                                    else
+                                    else // Tilted or vertical circle
                                     {
                                         marquee_localXAxis = (DxfVector.ZAxis).Cross(marquee_normal).Normalize();
                                     }
                                     DxfVector marquee_localYAxis = marquee_normal.Cross(marquee_localXAxis).Normalize();
 
-                                    newTrajectory.CirclePoint1.Coordinates = new DxfPoint(
-                                        marquee_center.X + marquee_localXAxis.X * marquee_radius,
-                                        marquee_center.Y + marquee_localXAxis.Y * marquee_radius,
-                                        marquee_center.Z + marquee_localXAxis.Z * marquee_radius);
+                                    double marquee_angleP1_rad = -135.0 * Math.PI / 180.0;
 
-                                    double marquee_angle120 = 2.0 * Math.PI / 3.0;
-                                    double marquee_cos120 = Math.Cos(marquee_angle120);
-                                    double marquee_sin120 = Math.Sin(marquee_angle120);
-                                    DxfVector marquee_dirP2_unscaled = new DxfVector(
-                                        marquee_localXAxis.X * marquee_cos120 + marquee_localYAxis.X * marquee_sin120,
-                                        marquee_localXAxis.Y * marquee_cos120 + marquee_localYAxis.Y * marquee_sin120,
-                                        marquee_localXAxis.Z * marquee_cos120 + marquee_localYAxis.Z * marquee_sin120);
-                                    newTrajectory.CirclePoint2.Coordinates = new DxfPoint(
-                                        marquee_center.X + marquee_dirP2_unscaled.X * marquee_radius,
-                                        marquee_center.Y + marquee_dirP2_unscaled.Y * marquee_radius,
-                                        marquee_center.Z + marquee_dirP2_unscaled.Z * marquee_radius);
+                                    DxfVector marquee_p1_offset_vec = (marquee_localXAxis * (marquee_radius * Math.Cos(marquee_angleP1_rad))) + (marquee_localYAxis * (marquee_radius * Math.Sin(marquee_angleP1_rad)));
+                                    newTrajectory.CirclePoint1.Coordinates = marquee_center + marquee_p1_offset_vec;
 
-                                    double marquee_angle240 = 4.0 * Math.PI / 3.0;
-                                    double marquee_cos240 = Math.Cos(marquee_angle240);
-                                    double marquee_sin240 = Math.Sin(marquee_angle240);
-                                    DxfVector marquee_dirP3_unscaled = new DxfVector(
-                                        marquee_localXAxis.X * marquee_cos240 + marquee_localYAxis.X * marquee_sin240,
-                                        marquee_localXAxis.Y * marquee_cos240 + marquee_localYAxis.Y * marquee_sin240,
-                                        marquee_localXAxis.Z * marquee_cos240 + marquee_localYAxis.Z * marquee_sin240);
-                                    newTrajectory.CirclePoint3.Coordinates = new DxfPoint(
-                                        marquee_center.X + marquee_dirP3_unscaled.X * marquee_radius,
-                                        marquee_center.Y + marquee_dirP3_unscaled.Y * marquee_radius,
-                                        marquee_center.Z + marquee_dirP3_unscaled.Z * marquee_radius);
+                                    double marquee_angleP2_rad = marquee_angleP1_rad + (120.0 * Math.PI / 180.0);
+                                    double marquee_angleP3_rad = marquee_angleP1_rad + (240.0 * Math.PI / 180.0);
+
+                                    DxfVector marquee_p2_offset_vec = (marquee_localXAxis * (marquee_radius * Math.Cos(marquee_angleP2_rad))) + (marquee_localYAxis * (marquee_radius * Math.Sin(marquee_angleP2_rad)));
+                                    DxfVector marquee_p3_offset_vec = (marquee_localXAxis * (marquee_radius * Math.Cos(marquee_angleP3_rad))) + (marquee_localYAxis * (marquee_radius * Math.Sin(marquee_angleP3_rad)));
+
+                                    newTrajectory.CirclePoint2.Coordinates = marquee_center + marquee_p2_offset_vec;
+                                    newTrajectory.CirclePoint3.Coordinates = marquee_center + marquee_p3_offset_vec;
 
                                     // Store original parameters as well
                                     newTrajectory.OriginalCircleCenter = marquee_center;
