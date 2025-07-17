@@ -1201,11 +1201,6 @@ namespace RobTeach.Views
                             {
                                 orderedVertices.Add(vertices[(startIndex + i) % vertices.Count]);
                             }
-                            // If the polyline is closed, add the starting point to the end to complete the loop
-                            if (polyline.IsClosed)
-                            {
-                                orderedVertices.Add(orderedVertices[0]);
-                            }
                             trajectory.Points.AddRange(orderedVertices);
                         }
                     }
