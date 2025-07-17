@@ -1,0 +1,164 @@
+<mah:MetroWindow x:Class="RobTeach.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RobTeach.Views"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        mc:Ignorable="d"
+        Title="RobTeach Application" Height="550" Width="850"
+        Closing="MainWindow_Closing"
+        WindowState="Maximized"
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}">
+    <mah:MetroWindow.Resources>
+        <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#FF2D2D30"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#FF3F3F46"/>
+        <SolidColorBrush x:Key="DefaultTextBrush" Color="#FFE0E0E0"/>
+        <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="#FF2D2D30"/>
+        <SolidColorBrush x:Key="CanvasContainerBackgroundBrush" Color="#FF2D2D30"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#FF555555"/>
+    </mah:MetroWindow.Resources>
+    <Grid MinWidth="850" MinHeight="520" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" MinHeight="35"/> <!-- Row 0 for Load DXF / Actions -->
+            <RowDefinition Height="*"/> <!-- Row 1 for CadCanvas -->
+            <RowDefinition Height="Auto"/> <!-- Row 2 for Config/Action Panel -->
+            <RowDefinition Height="Auto"/> <!-- Row 3 for Modbus Panel -->
+            <RowDefinition Height="Auto"/> <!-- Row 4 for StatusBar -->
+        </Grid.RowDefinitions>
+
+        <!-- Load DXF and Actions Button Bar -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5,5,5,0" Background="{StaticResource PanelBackgroundBrush}">
+            <Button Content="Load DXF" Click="LoadDxfButton_Click" Name="LoadDxfButton" Padding="5" Margin="0,0,5,0"/>
+            <Button Content="Save Config" Name="SaveConfigButton" Click="SaveConfigButton_Click" Padding="5" Margin="0,0,5,0"/>
+            <Button Content="Load Config" Name="LoadConfigButton" Click="LoadConfigButton_Click" Padding="5" Margin="0,0,5,0"/>
+            <Button Content="Fit to View" Click="FitToViewButton_Click" Name="FitToViewButton" Padding="5" Margin="0,0,5,0"/>
+            <Button Content="Show 3D View" Name="Show3DViewButton" Click="Show3DViewButton_Click" Padding="5" Margin="0,0,5,0" Visibility="Collapsed"/>
+            <ComboBox Name="LanguageComboBox" Width="100" Margin="5,0,0,0" VerticalAlignment="Center">
+                <ComboBoxItem Content="English"/>
+                <ComboBoxItem Content="中文"/>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- CAD Canvas Area -->
+        <Border Grid.Row="1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Margin="5" Background="{StaticResource CanvasContainerBackgroundBrush}">
+            <Canvas x:Name="CadCanvas" ClipToBounds="False"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    Background="{StaticResource CanvasBackgroundBrush}"
+                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}}"
+                    Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Border}}"/>
+        </Border>
+
+        <!-- Configuration and Action Panel -->
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Margin="5,0,5,5" Background="{StaticResource PanelBackgroundBrush}">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Product:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+                <TextBox Name="ProductNameTextBox" Width="120" VerticalAlignment="Center" Margin="0,0,5,0" Text="DefaultProduct"/>
+
+                <GroupBox x:Name="SprayPassManagementGroupBox" Header="Spray Pass Management" Margin="5,0,5,0" Padding="5" VerticalAlignment="Top" Foreground="{StaticResource DefaultTextBrush}">
+                    <StackPanel Orientation="Vertical">
+                        <Label x:Name="AvailablePassesLabel" Content="Available Passes:" Margin="2" Foreground="{StaticResource DefaultTextBrush}"/>
+                        <ListBox Name="SprayPassesListBox" Height="60" Margin="2" DisplayMemberPath="PassName"/>
+                        <StackPanel Orientation="Horizontal" Margin="2" HorizontalAlignment="Center">
+                            <Button Name="AddPassButton" Content="Add Pass" Margin="2,0"/>
+                            <Button Name="RemovePassButton" Content="Remove Pass" Margin="2,0"/>
+                            <Button Name="RenamePassButton" Content="Rename Pass" Margin="2,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox x:Name="TrajectorySequenceGroupBox" Header="Trajectory Sequence (Current Pass)" Margin="5,0,5,0" Padding="5" VerticalAlignment="Top" Foreground="{StaticResource DefaultTextBrush}">
+                    <StackPanel Orientation="Vertical">
+                        <Label x:Name="ExecutionOrderLabel" Content="Execution Order:" Margin="2" Foreground="{StaticResource DefaultTextBrush}"/>
+                        <ListBox Name="CurrentPassTrajectoriesListBox" Height="100" Margin="2"/>
+                        <StackPanel Orientation="Horizontal" Margin="2" HorizontalAlignment="Center">
+                            <Button Name="MoveTrajectoryUpButton" Content="Move Up" Margin="2,0"/>
+                            <Button Name="MoveTrajectoryDownButton" Content="Move Down" Margin="2,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox x:Name="NozzleSettingsGroupBox" Header="Selected Trajectory - Nozzle Settings" Margin="5,0,5,0" Padding="5" VerticalAlignment="Top" Foreground="{StaticResource DefaultTextBrush}">
+                    <StackPanel Orientation="Vertical">
+                        <GroupBox x:Name="UpperNozzleGroupBox" Header="Upper Nozzle" Margin="2" Padding="3" Foreground="{StaticResource DefaultTextBrush}">
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox Name="TrajectoryUpperNozzleEnabledCheckBox" Content="Enabled" Margin="1" Foreground="{StaticResource DefaultTextBrush}" Visibility="Collapsed"/>
+                                <CheckBox Name="TrajectoryUpperNozzleGasOnCheckBox" Content="Gas On" Margin="1" Foreground="{StaticResource DefaultTextBrush}"/>
+                                <CheckBox Name="TrajectoryUpperNozzleLiquidOnCheckBox" Content="Liquid On" Margin="1" Foreground="{StaticResource DefaultTextBrush}"/>
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox x:Name="LowerNozzleGroupBox" Header="Lower Nozzle" Margin="2" Padding="3" Foreground="{StaticResource DefaultTextBrush}">
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox Name="TrajectoryLowerNozzleEnabledCheckBox" Content="Enabled" Margin="1" Foreground="{StaticResource DefaultTextBrush}" Visibility="Collapsed"/>
+                                <CheckBox Name="TrajectoryLowerNozzleGasOnCheckBox" Content="Gas On" Margin="1" Foreground="{StaticResource DefaultTextBrush}"/>
+                                <CheckBox Name="TrajectoryLowerNozzleLiquidOnCheckBox" Content="Liquid On" Margin="1" Foreground="{StaticResource DefaultTextBrush}"/>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox x:Name="GeometryGroupBox" Header="Selected Trajectory - Geometry" Margin="5,0,0,0" Padding="5" VerticalAlignment="Top" Foreground="{StaticResource DefaultTextBrush}">
+                    <StackPanel Orientation="Vertical">
+                        <CheckBox Name="TrajectoryIsReversedCheckBox" Content="Reverse Direction" Margin="2" Foreground="{StaticResource DefaultTextBrush}"/>
+                        <StackPanel Name="LineHeightControlsPanel" Orientation="Horizontal" Visibility="Collapsed" Margin="2">
+                            <Label x:Name="LineStartZLabel" Content="Start Z:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+                            <TextBox Name="LineStartZTextBox" Width="50" IsReadOnly="False" VerticalAlignment="Center" Margin="2,0" TextChanged="LineStartZTextBox_TextChanged"/>
+                            <Label x:Name="LineEndZLabel" Content="End Z:" VerticalAlignment="Center" Margin="5,0,0,0" Foreground="{StaticResource DefaultTextBrush}"/>
+                            <TextBox Name="LineEndZTextBox" Width="50" IsReadOnly="False" VerticalAlignment="Center" Margin="2,0" TextChanged="LineEndZTextBox_TextChanged"/>
+                        </StackPanel>
+                        <StackPanel Name="ArcHeightControlsPanel" Orientation="Horizontal" Visibility="Collapsed" Margin="2">
+                            <Label x:Name="ArcCenterZLabel" Content="Center Z:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+                            <TextBox Name="ArcCenterZTextBox" Width="50" IsReadOnly="False" VerticalAlignment="Center" Margin="2,0" TextChanged="ArcCenterZTextBox_TextChanged"/>
+                        </StackPanel>
+                        <StackPanel Name="CircleHeightControlsPanel" Orientation="Horizontal" Visibility="Collapsed" Margin="2">
+                            <Label x:Name="CircleCenterZLabel" Content="Center Z:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+                            <TextBox Name="CircleCenterZTextBox" Width="50" IsReadOnly="False" VerticalAlignment="Center" Margin="2,0" TextChanged="CircleCenterZTextBox_TextChanged"/>
+                        </StackPanel>
+                        <StackPanel Name="PolygonHeightControlsPanel" Orientation="Horizontal" Visibility="Collapsed" Margin="2">
+                            <Label x:Name="PolygonZLabel" Content="Z:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+                            <TextBox Name="PolygonZTextBox" Width="50" IsReadOnly="False" VerticalAlignment="Center" Margin="2,0" TextChanged="PolygonZTextBox_TextChanged"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="2">
+                            <Label x:Name="TrajectoryRuntimeLabel" Content="Runtime (s):" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+                            <TextBox Name="TrajectoryRuntimeTextBox" Width="60" VerticalAlignment="Center" Margin="2,0"/>
+                        </StackPanel>
+                        <GroupBox Header="Vertices" Margin="2" Padding="3" Foreground="{StaticResource DefaultTextBrush}" Name="PolygonVerticesGroupBox" Visibility="Collapsed">
+                                            <ListBox x:Name="PolygonVerticesListBox" Height="80" />
+                        </GroupBox>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- New Test Run Control GroupBox -->
+                <GroupBox x:Name="TestRunControlGroupBox" Header="Test Run Control" Margin="5,0,0,0" Padding="5" VerticalAlignment="Top" Foreground="{StaticResource DefaultTextBrush}">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <Label x:Name="SpeedModeLabel" Content="Speed Mode:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+                            <RadioButton Name="SlowSpeedRadioButton" Content="Slow Speed" GroupName="TestRunSpeedMode" IsChecked="True" VerticalAlignment="Center" Margin="5,0" Foreground="{StaticResource DefaultTextBrush}"/>
+                            <RadioButton Name="StandardSpeedRadioButton" Content="Standard Speed" GroupName="TestRunSpeedMode" VerticalAlignment="Center" Margin="5,0" Foreground="{StaticResource DefaultTextBrush}"/>
+                        </StackPanel>
+                        <Button Name="StartTestRunButton" Content="Start Test Run" Padding="5" IsEnabled="False"/>
+                    </StackPanel>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Modbus Panel -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="5" Background="{StaticResource PanelBackgroundBrush}">
+            <Label x:Name="ModbusIpLabel" Content="Modbus IP:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+            <TextBox Name="ModbusIpAddressTextBox" Width="100" VerticalAlignment="Center" Text="127.0.0.1" Margin="0,0,10,0"/>
+            <Label x:Name="ModbusPortLabel" Content="Port:" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextBrush}"/>
+            <TextBox Name="ModbusPortTextBox" Width="40" VerticalAlignment="Center" Text="502" Margin="0,0,10,0"/>
+            <Button Content="Connect" Name="ModbusConnectButton" Click="ModbusConnectButton_Click" Margin="5,0,5,0" Padding="5"/>
+            <Button Content="Disconnect" Name="ModbusDisconnectButton" Click="ModbusDisconnectButton_Click" Margin="0,0,5,0" Padding="5" IsEnabled="False"/>
+            <Button Content="Send to Robot" Name="SendToRobotButton" Click="SendToRobotButton_Click" Margin="10,0,5,0" Padding="5" FontWeight="Bold" Background="LightGreen" VerticalAlignment="Center" Foreground="Black"/>
+            <Ellipse Name="ModbusStatusIndicatorEllipse" Width="15" Height="15" Fill="Red" Margin="5,0,0,0" VerticalAlignment="Center" Stroke="DarkGray" StrokeThickness="1"/>
+            <TextBlock Name="ModbusStatusTextBlock" Text="Disconnected" VerticalAlignment="Center" Margin="5,0,0,0"/>
+        </StackPanel>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="4" Margin="5,0,5,5" Background="{StaticResource PanelBackgroundBrush}">
+            <TextBlock Name="StatusTextBlock" Text="Ready"/>
+        </StatusBar>
+    </Grid>
+</mah:MetroWindow>

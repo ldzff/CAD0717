@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RootNamespace>RobTeach</RootNamespace>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EasyModbusTCP.NETCore" Version="1.0.0" />
+    <PackageReference Include="HelixToolkit.Wpf" Version="2.24.0" />
+    <PackageReference Include="IxMilia.Dxf" Version="0.8.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <!-- Removed Program.cs Compile line -->
+    <Compile Include="Services\CadService.cs" />
+    <Compile Include="Services\TrajectoryJsonConverter.cs" />
+    <Compile Include="Views\DirectionIndicator.cs" />
+    <Compile Include="Views\MainWindow.xaml.cs">
+      <DependentUpon>Views\MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Robot3DView.xaml.cs">
+      <DependentUpon>Views\Robot3DView.xaml</DependentUpon>
+    </Compile>
+    <!-- Include files in Models, ViewModels, Utils if any are added later -->
+    <Compile Include="Models\**\*.cs" />
+    <Compile Include="ViewModels\**\*.cs" />
+    <Compile Include="Utils\**\*.cs" />
+     <Compile Include="Services\ModbusService.cs" />
+     <Compile Include="Services\ModbusResponse.cs" />
+     <Compile Include="Services\ConfigurationService.cs" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="Views\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Robot3DView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+</Project>
