@@ -318,7 +318,7 @@ namespace RobTeach.Services
                 {
                     float data = dataQueue.Dequeue();
                     writer.WriteLine($"{data.ToString("F3")}  (Address: {currentAddress})");
-                    currentAddress++;
+                    currentAddress+=2;
                 }
             }
         }
