@@ -118,7 +118,12 @@ namespace RobTeach.Services
             {
                 int totalPrimitives = pass.Trajectories.Sum(t => {
                     if (t.PrimitiveType != "Polygon") return 1;
-                    return t.Points.Count > 1 ? t.Points.Count - 1 : 0;
+                    int segmentCount = t.Points.Count > 1 ? t.Points.Count - 1 : 0;
+                    if (t.OriginalDxfEntity is DxfLwPolyline polyline && polyline.IsClosed && t.Points.Count > 2)
+                    {
+                        segmentCount++;
+                    }
+                    return segmentCount;
                 });
                 dataQueue.Enqueue((float)totalPrimitives);
 
@@ -217,6 +222,10 @@ namespace RobTeach.Services
                         {
                             totalLength += Math.Sqrt((points[i+1] - points[i]).LengthSquared());
                         }
+                        if (trajectory.OriginalDxfEntity is DxfLwPolyline polyline && polyline.IsClosed && points.Count > 2)
+                        {
+                            totalLength += Math.Sqrt((points[points.Count - 1] - points[0]).LengthSquared());
+                        }
 
                         // Calculate uniform speed for the entire polygon
                         float uniformSpeed = 0.0f;
@@ -228,6 +237,11 @@ namespace RobTeach.Services
                         {
                             primitiveIndexInPass++;
                             EnqueueLineSegmentData(dataQueue, trajectory, points[i], points[i+1], primitiveIndexInPass, uniformSpeed);
+                        }
+                        if (trajectory.OriginalDxfEntity is DxfLwPolyline polyline2 && polyline2.IsClosed && points.Count > 2)
+                        {
+                            primitiveIndexInPass++;
+                            EnqueueLineSegmentData(dataQueue, trajectory, points[points.Count - 1], points[0], primitiveIndexInPass, uniformSpeed);
                         }
 
                     }
