@@ -1193,13 +1193,21 @@ namespace RobTeach.Views
                     {
                         trajectory.Points.Clear();
                         var vertices = polyline.Vertices.Select(v => new Point3D(v.X, v.Y, polyline.Elevation)).ToList();
-                        int startIndex = FindBottomLeftVertexIndex(vertices.Select(p => new Point(p.X, p.Y)).ToList());
-                        var orderedVertices = new List<Point3D>();
-                        for (int i = 0; i < vertices.Count; i++)
+                        if (vertices.Any())
                         {
-                            orderedVertices.Add(vertices[(startIndex + i) % vertices.Count]);
+                            int startIndex = FindBottomLeftVertexIndex(vertices.Select(p => new Point(p.X, p.Y)).ToList());
+                            var orderedVertices = new List<Point3D>();
+                            for (int i = 0; i < vertices.Count; i++)
+                            {
+                                orderedVertices.Add(vertices[(startIndex + i) % vertices.Count]);
+                            }
+                            // If the polyline is closed, add the starting point to the end to complete the loop
+                            if (polyline.IsClosed)
+                            {
+                                orderedVertices.Add(orderedVertices[0]);
+                            }
+                            trajectory.Points.AddRange(orderedVertices);
                         }
-                        trajectory.Points.AddRange(orderedVertices);
                     }
                     break;
                 default:
@@ -3974,9 +3982,7 @@ namespace RobTeach.Views
                 // 2.a. Number of Primitives in Pass
                 int totalPrimitives = pass.Trajectories.Sum(t => {
                     if (t.PrimitiveType != "Polygon") return 1;
-                    if (t.Points.Count < 2) return 0;
-                    bool isClosed = (t.OriginalDxfEntity as DxfLwPolyline)?.IsClosed ?? false;
-                    return isClosed ? t.Points.Count : t.Points.Count - 1;
+                    return t.Points.Count > 1 ? t.Points.Count - 1 : 0;
                 });
                 dataQueue.Enqueue((float)totalPrimitives);
 
@@ -4115,42 +4121,6 @@ namespace RobTeach.Views
                             for (int j = 0; j < 3; j++) dataQueue.Enqueue(0.0f);
                         }
 
-                        // Handle the closing segment for closed polylines
-                        if ((trajectory.OriginalDxfEntity as DxfLwPolyline)?.IsClosed == true && trajectory.Points.Count > 1)
-                        {
-                            Point3D startPoint = trajectory.Points.Last();
-                            Point3D endPoint = trajectory.Points.First();
-
-                            primitiveIndexInPass++;
-                            dataQueue.Enqueue((float)primitiveIndexInPass); // Primitive Index
-                            dataQueue.Enqueue(1.0f); // Primitive Type (Line)
-
-                            // Nozzle Settings
-                            dataQueue.Enqueue(trajectory.UpperNozzleGasOn ? 11.0f : 10.0f);
-                            dataQueue.Enqueue(trajectory.UpperNozzleLiquidOn ? 12.0f : 10.0f);
-                            dataQueue.Enqueue(trajectory.LowerNozzleGasOn ? 21.0f : 20.0f);
-                            dataQueue.Enqueue(trajectory.LowerNozzleLiquidOn ? 22.0f : 20.0f);
-
-                            // Speed
-                            double segmentLength = GeometryUtils.DistanceTo(startPoint, endPoint);
-                            double totalLength = TrajectoryUtils.CalculateTrajectoryLength(trajectory);
-                            double segmentRuntime = (totalLength > 0) ? trajectory.Runtime * (segmentLength / totalLength) : 0;
-                            float speedForRobot = (segmentRuntime > 0.00001) ? (float)(segmentLength / segmentRuntime) : 0.0f;
-                            dataQueue.Enqueue(speedForRobot);
-
-                            // Geometry
-                            dataQueue.Enqueue((float)startPoint.X);
-                            dataQueue.Enqueue((float)startPoint.Y);
-                            dataQueue.Enqueue((float)startPoint.Z);
-                            dataQueue.Enqueue(0f); dataQueue.Enqueue(0f); dataQueue.Enqueue(0f);
-                            dataQueue.Enqueue((float)endPoint.X);
-                            dataQueue.Enqueue((float)endPoint.Y);
-                            dataQueue.Enqueue((float)endPoint.Z);
-                            dataQueue.Enqueue(0f); dataQueue.Enqueue(0f); dataQueue.Enqueue(0f);
-
-                            // Filler data
-                            for (int j = 0; j < 3; j++) dataQueue.Enqueue(0.0f);
-                        }
                     }
 
                     if (trajectory.PrimitiveType != "Polygon")

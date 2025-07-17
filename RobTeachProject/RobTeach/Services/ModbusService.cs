@@ -118,9 +118,7 @@ namespace RobTeach.Services
             {
                 int totalPrimitives = pass.Trajectories.Sum(t => {
                     if (t.PrimitiveType != "Polygon") return 1;
-                    if (t.Points.Count < 2) return 0;
-                    bool isClosed = (t.OriginalDxfEntity as DxfLwPolyline)?.IsClosed ?? false;
-                    return isClosed ? t.Points.Count : t.Points.Count - 1;
+                    return t.Points.Count > 1 ? t.Points.Count - 1 : 0;
                 });
                 dataQueue.Enqueue((float)totalPrimitives);
 
@@ -219,11 +217,6 @@ namespace RobTeach.Services
                             EnqueueLineSegmentData(dataQueue, trajectory, points[i], points[i+1], primitiveIndexInPass);
                         }
 
-                        if ((trajectory.OriginalDxfEntity as DxfLwPolyline)?.IsClosed == true)
-                        {
-                            primitiveIndexInPass++;
-                            EnqueueLineSegmentData(dataQueue, trajectory, points.Last(), points.First(), primitiveIndexInPass);
-                        }
                     }
 
                     if (trajectory.PrimitiveType != "Polygon")
