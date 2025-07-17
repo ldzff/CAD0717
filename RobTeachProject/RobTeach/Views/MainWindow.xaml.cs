@@ -19,6 +19,7 @@ using System.IO;
 using System.Text; // Added for Encoding
 using RobTeach.Utils; // Added for GeometryUtils
 using IxMilia.Dxf.Blocks; // Added for DxfBlock
+using IxMilia.Dxf.Tables;
 
 // using netDxf.Header; // No longer needed with IxMilia.Dxf
 using System.Windows.Threading; // Was for optional Dispatcher.Invoke, now used.
