@@ -3248,6 +3248,17 @@ namespace RobTeach.Views
                                     DxfVector marquee_normal = circle.Normal.Normalize();
                                     DxfPoint marquee_center = circle.Center;
                                     double marquee_radius = circle.Radius;
+
+                                    // Re-introducing the corrected logic for marquee_localXAxis
+                                    DxfVector marquee_localXAxis;
+                                    if (Math.Abs(marquee_normal.Z) > 0.999) // Circle is mostly flat on XY plane
+                                    {
+                                        marquee_localXAxis = DxfVector.XAxis;
+                                    }
+                                    else // Tilted or vertical circle
+                                    {
+                                        marquee_localXAxis = (DxfVector.ZAxis).Cross(marquee_normal).Normalize();
+                                    }
                                     DxfVector marquee_localYAxis = marquee_normal.Cross(marquee_localXAxis).Normalize();
 
                                     double marquee_angleP1_rad = -135.0 * Math.PI / 180.0;
