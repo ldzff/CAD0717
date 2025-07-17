@@ -270,7 +270,7 @@ namespace RobTeach.Services
         /// </summary>
         /// <param name="address">The Modbus address (0-based) of the holding register to read.</param>
         /// <returns>A <see cref="ModbusReadInt16Result"/> containing the outcome of the read operation.</returns>
-        private void EnqueueLineSegmentData(Queue<float> queue, Trajectory parentTrajectory, Point3D start, Point3D end, int primitiveIndex)
+        private void EnqueueLineSegmentData(Queue<float> queue, Trajectory parentTrajectory, Point3D start, Point3D end, int primitiveIndex, float uniformSpeed)
         {
             // 1. Primitive Index
             queue.Enqueue((float)primitiveIndex);
@@ -282,11 +282,7 @@ namespace RobTeach.Services
             queue.Enqueue(parentTrajectory.LowerNozzleGasOn ? 21.0f : 20.0f);
             queue.Enqueue(parentTrajectory.LowerNozzleLiquidOn ? 22.0f : 20.0f);
             // 4. Speed
-            double segmentLength = GeometryUtils.DistanceTo(start, end);
-            double totalLength = TrajectoryUtils.CalculateTrajectoryLength(parentTrajectory);
-            double segmentRuntime = (totalLength > 0.00001) ? parentTrajectory.Runtime * (segmentLength / totalLength) : 0;
-            float speedForRobot = (segmentRuntime > 0.00001) ? (float)(segmentLength / segmentRuntime) : 0.0f;
-            queue.Enqueue(speedForRobot);
+            queue.Enqueue(uniformSpeed);
             // 5. Geometry
             queue.Enqueue((float)start.X);
             queue.Enqueue((float)start.Y);

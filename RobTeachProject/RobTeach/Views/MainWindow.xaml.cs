@@ -4082,6 +4082,14 @@ namespace RobTeach.Views
                     }
                     else if (trajectory.PrimitiveType == "Polygon" && trajectory.Points.Count > 1)
                     {
+                        // Calculate the uniform speed for the entire polyline
+                        double totalLength = TrajectoryUtils.CalculateTrajectoryLength(trajectory);
+                        float uniformSpeed = 0.0f;
+                        if (trajectory.Runtime > 0.00001 && totalLength > 0.00001)
+                        {
+                            uniformSpeed = (float)(totalLength / trajectory.Runtime);
+                        }
+
                         for (int i = 0; i < trajectory.Points.Count - 1; i++)
                         {
                             Point3D startPoint = new Point3D(trajectory.Points[i].X, trajectory.Points[i].Y, trajectory.PolygonZ);
@@ -4099,13 +4107,8 @@ namespace RobTeach.Views
                             dataQueue.Enqueue(trajectory.LowerNozzleGasOn ? 21.0f : 20.0f);
                             dataQueue.Enqueue(trajectory.LowerNozzleLiquidOn ? 22.0f : 20.0f);
 
-                            // 2.b.vii. End Effector Speed
-                            double segmentLength = GeometryUtils.DistanceTo(startPoint, endPoint);
-                            // Assuming the total runtime of the polygon is distributed proportionally to segment length
-                            double totalLength = TrajectoryUtils.CalculateTrajectoryLength(trajectory);
-                            double segmentRuntime = (totalLength > 0) ? trajectory.Runtime * (segmentLength / totalLength) : 0;
-                            float speedForRobot = (segmentRuntime > 0.00001) ? (float)(segmentLength / segmentRuntime) : 0.0f;
-                            dataQueue.Enqueue(speedForRobot);
+                            // 2.b.vii. End Effector Speed (use the pre-calculated uniform speed)
+                            dataQueue.Enqueue(uniformSpeed);
 
                             // 2.b.viii. Primitive Geometry Data (Line)
                             dataQueue.Enqueue((float)startPoint.X);
