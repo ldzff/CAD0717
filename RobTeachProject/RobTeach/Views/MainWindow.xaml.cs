@@ -19,7 +19,6 @@ using System.IO;
 using System.Text; // Added for Encoding
 using RobTeach.Utils; // Added for GeometryUtils
 using IxMilia.Dxf.Blocks; // Added for DxfBlock
-using IxMilia.Dxf.Tables;
 
 // using netDxf.Header; // No longer needed with IxMilia.Dxf
 using System.Windows.Threading; // Was for optional Dispatcher.Invoke, now used.
@@ -2073,13 +2072,20 @@ namespace RobTeach.Views
 
 
                             // P2 and P3 are rotated by 120 and 240 degrees from P1 around the center.
-                            // We can achieve this by rotating the offset vector `p1_offset_vec` around the `normal`.
-                            // This is more robust for 3D orientation than simple angle addition.
-                            DxfMatrix rotation120 = DxfMatrix.CreateRotation(normal, 120);
-                            DxfMatrix rotation240 = DxfMatrix.CreateRotation(normal, 240);
+                            // We can achieve this by rotating the local X and Y axes around the normal vector.
 
-                            DxfVector p2_offset_vec = rotation120.Transform(p1_offset_vec);
-                            DxfVector p3_offset_vec = rotation240.Transform(p1_offset_vec);
+                            // Define angles for P2 and P3 relative to P1's angle (-135 or 225 degrees)
+                            double angleP1 = -135.0; // Angle for the bottom-left point in degrees
+                            double angleP2 = angleP1 + 120.0;
+                            double angleP3 = angleP1 + 240.0;
+
+                            // Convert angles to radians for Math.Cos/Sin
+                            double radP2 = angleP2 * Math.PI / 180.0;
+                            double radP3 = angleP3 * Math.PI / 180.0;
+
+                            // Calculate P2 and P3 coordinates in the local 2D plane of the circle
+                            DxfVector p2_offset_vec = (localXAxis * (radius * Math.Cos(radP2))) + (localYAxis * (radius * Math.Sin(radP2)));
+                            DxfVector p3_offset_vec = (localXAxis * (radius * Math.Cos(radP3))) + (localYAxis * (radius * Math.Sin(radP3)));
 
                             newTrajectory.CirclePoint2.Coordinates = center + p2_offset_vec;
                             newTrajectory.CirclePoint3.Coordinates = center + p3_offset_vec;
