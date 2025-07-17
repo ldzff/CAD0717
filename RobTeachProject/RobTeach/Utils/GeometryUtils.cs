@@ -235,5 +235,13 @@ namespace RobTeach.Utils
 
             return (p1, p2, p3);
         }
+
+        public static double DistanceTo(Models.Point3D p1, Models.Point3D p2)
+        {
+            double dx = p2.X - p1.X;
+            double dy = p2.Y - p1.Y;
+            double dz = p2.Z - p1.Z;
+            return Math.Sqrt(dx * dx + dy * dy + dz * dz);
+        }
     }
 }

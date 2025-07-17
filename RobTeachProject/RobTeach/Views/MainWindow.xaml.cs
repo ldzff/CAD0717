@@ -4089,7 +4089,7 @@ namespace RobTeach.Views
                             dataQueue.Enqueue(trajectory.LowerNozzleLiquidOn ? 22.0f : 20.0f);
 
                             // 2.b.vii. End Effector Speed
-                            double segmentLength = startPoint.DistanceTo(endPoint);
+                            double segmentLength = GeometryUtils.DistanceTo(startPoint, endPoint);
                             // Assuming the total runtime of the polygon is distributed proportionally to segment length
                             double totalLength = TrajectoryUtils.CalculateTrajectoryLength(trajectory);
                             double segmentRuntime = (totalLength > 0) ? trajectory.Runtime * (segmentLength / totalLength) : 0;
