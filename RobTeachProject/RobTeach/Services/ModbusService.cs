@@ -116,7 +116,12 @@ namespace RobTeach.Services
 
             foreach (var pass in config.SprayPasses)
             {
-                int totalPrimitives = pass.Trajectories.Sum(t => t.PrimitiveType == "Polygon" ? (t.Points.Count - ((t.OriginalDxfEntity as DxfLwPolyline)?.IsClosed ?? false ? 0 : 1)) : 1);
+                int totalPrimitives = pass.Trajectories.Sum(t => {
+                    if (t.PrimitiveType != "Polygon") return 1;
+                    if (t.Points.Count < 2) return 0;
+                    bool isClosed = (t.OriginalDxfEntity as DxfLwPolyline)?.IsClosed ?? false;
+                    return isClosed ? t.Points.Count : t.Points.Count - 1;
+                });
                 dataQueue.Enqueue((float)totalPrimitives);
 
                 int primitiveIndexInPass = 0;
@@ -205,6 +210,21 @@ namespace RobTeach.Services
                         dataQueue.Enqueue((float)trajectory.CirclePoint3.Ry);
                         dataQueue.Enqueue((float)trajectory.CirclePoint3.Rz);
                     }
+                    else if (trajectory.PrimitiveType == "Polygon" && trajectory.Points.Count > 1)
+                    {
+                        var points = trajectory.Points;
+                        for (int i = 0; i < points.Count - 1; i++)
+                        {
+                            primitiveIndexInPass++;
+                            EnqueueLineSegmentData(dataQueue, trajectory, points[i], points[i+1], primitiveIndexInPass);
+                        }
+
+                        if ((trajectory.OriginalDxfEntity as DxfLwPolyline)?.IsClosed == true)
+                        {
+                            primitiveIndexInPass++;
+                            EnqueueLineSegmentData(dataQueue, trajectory, points.Last(), points.First(), primitiveIndexInPass);
+                        }
+                    }
 
                     if (trajectory.PrimitiveType != "Polygon")
                     {
@@ -250,6 +270,41 @@ namespace RobTeach.Services
                 Debug.WriteLine($"[ModbusService] General error during send: {ex.ToString()}");
                 return ModbusResponse.Fail($"An unexpected error occurred while sending Modbus data: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Reads a single 16-bit signed integer from a Modbus holding register.
+        /// </summary>
+        /// <param name="address">The Modbus address (0-based) of the holding register to read.</param>
+        /// <returns>A <see cref="ModbusReadInt16Result"/> containing the outcome of the read operation.</returns>
+        private void EnqueueLineSegmentData(Queue<float> queue, Trajectory parentTrajectory, Point3D start, Point3D end, int primitiveIndex)
+        {
+            // 1. Primitive Index
+            queue.Enqueue((float)primitiveIndex);
+            // 2. Primitive Type (Line)
+            queue.Enqueue(1.0f);
+            // 3. Nozzle Settings
+            queue.Enqueue(parentTrajectory.UpperNozzleGasOn ? 11.0f : 10.0f);
+            queue.Enqueue(parentTrajectory.UpperNozzleLiquidOn ? 12.0f : 10.0f);
+            queue.Enqueue(parentTrajectory.LowerNozzleGasOn ? 21.0f : 20.0f);
+            queue.Enqueue(parentTrajectory.LowerNozzleLiquidOn ? 22.0f : 20.0f);
+            // 4. Speed
+            double segmentLength = GeometryUtils.DistanceTo(start, end);
+            double totalLength = TrajectoryUtils.CalculateTrajectoryLength(parentTrajectory);
+            double segmentRuntime = (totalLength > 0.00001) ? parentTrajectory.Runtime * (segmentLength / totalLength) : 0;
+            float speedForRobot = (segmentRuntime > 0.00001) ? (float)(segmentLength / segmentRuntime) : 0.0f;
+            queue.Enqueue(speedForRobot);
+            // 5. Geometry
+            queue.Enqueue((float)start.X);
+            queue.Enqueue((float)start.Y);
+            queue.Enqueue((float)start.Z);
+            queue.Enqueue(0f); queue.Enqueue(0f); queue.Enqueue(0f); // Rx, Ry, Rz for start
+            queue.Enqueue((float)end.X);
+            queue.Enqueue((float)end.Y);
+            queue.Enqueue((float)end.Z);
+            queue.Enqueue(0f); queue.Enqueue(0f); queue.Enqueue(0f); // Rx, Ry, Rz for end
+            // 6. Filler
+            for (int j = 0; j < 3; j++) queue.Enqueue(0.0f);
         }
 
         /// <summary>
