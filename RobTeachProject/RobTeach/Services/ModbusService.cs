@@ -211,10 +211,23 @@ namespace RobTeach.Services
                     else if (trajectory.PrimitiveType == "Polygon" && trajectory.Points.Count > 1)
                     {
                         var points = trajectory.Points;
+                        // Calculate the total length of the polygon
+                        double totalLength = 0;
+                        for (int i = 0; i < points.Count - 1; i++)
+                        {
+                            totalLength += Math.Sqrt((points[i+1] - points[i]).LengthSquared());
+                        }
+
+                        // Calculate uniform speed for the entire polygon
+                        float uniformSpeed = 0.0f;
+                        if (totalLength > 0.00001 && trajectory.Runtime > 0.00001)
+                        {
+                            uniformSpeed = (float)(totalLength / trajectory.Runtime / 1000.0); // Assuming length is in mm and runtime in seconds, speed in m/s
+                        }
                         for (int i = 0; i < points.Count - 1; i++)
                         {
                             primitiveIndexInPass++;
-                            EnqueueLineSegmentData(dataQueue, trajectory, points[i], points[i+1], primitiveIndexInPass);
+                            EnqueueLineSegmentData(dataQueue, trajectory, points[i], points[i+1], primitiveIndexInPass, uniformSpeed);
                         }
 
                     }
