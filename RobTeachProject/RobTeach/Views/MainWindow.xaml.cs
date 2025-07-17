@@ -4069,9 +4069,46 @@ namespace RobTeach.Views
                         dataQueue.Enqueue((float)trajectory.CirclePoint3.Ry);
                         dataQueue.Enqueue((float)trajectory.CirclePoint3.Rz);
                     }
-                    else if (trajectory.PrimitiveType == "Polygon")
+                    else if (trajectory.PrimitiveType == "Polygon" && trajectory.Points.Count > 1)
                     {
-                        //... (polygon logic to be implemented similarly)
+                        for (int i = 0; i < trajectory.Points.Count - 1; i++)
+                        {
+                            Point3D startPoint = trajectory.Points[i];
+                            Point3D endPoint = trajectory.Points[i + 1];
+
+                            primitiveIndexInPass++;
+                            // 2.b.i. Primitive Index
+                            dataQueue.Enqueue((float)primitiveIndexInPass);
+                            // 2.b.ii. Primitive Type (Line)
+                            dataQueue.Enqueue(1.0f);
+
+                            // 2.b.iii-vi. Nozzle Settings (from parent polygon)
+                            dataQueue.Enqueue(trajectory.UpperNozzleGasOn ? 11.0f : 10.0f);
+                            dataQueue.Enqueue(trajectory.UpperNozzleLiquidOn ? 12.0f : 10.0f);
+                            dataQueue.Enqueue(trajectory.LowerNozzleGasOn ? 21.0f : 20.0f);
+                            dataQueue.Enqueue(trajectory.LowerNozzleLiquidOn ? 22.0f : 20.0f);
+
+                            // 2.b.vii. End Effector Speed
+                            double segmentLength = startPoint.DistanceTo(endPoint);
+                            // Assuming the total runtime of the polygon is distributed proportionally to segment length
+                            double totalLength = TrajectoryUtils.CalculateTrajectoryLength(trajectory);
+                            double segmentRuntime = (totalLength > 0) ? trajectory.Runtime * (segmentLength / totalLength) : 0;
+                            float speedForRobot = (segmentRuntime > 0.00001) ? (float)(segmentLength / segmentRuntime) : 0.0f;
+                            dataQueue.Enqueue(speedForRobot);
+
+                            // 2.b.viii. Primitive Geometry Data (Line)
+                            dataQueue.Enqueue((float)startPoint.X);
+                            dataQueue.Enqueue((float)startPoint.Y);
+                            dataQueue.Enqueue((float)startPoint.Z);
+                            dataQueue.Enqueue(0f); dataQueue.Enqueue(0f); dataQueue.Enqueue(0f);
+                            dataQueue.Enqueue((float)endPoint.X);
+                            dataQueue.Enqueue((float)endPoint.Y);
+                            dataQueue.Enqueue((float)endPoint.Z);
+                            dataQueue.Enqueue(0f); dataQueue.Enqueue(0f); dataQueue.Enqueue(0f);
+
+                            // Filler data
+                            for (int j = 0; j < 3; j++) dataQueue.Enqueue(0.0f);
+                        }
                     }
 
                     if (trajectory.PrimitiveType != "Polygon")
