@@ -2089,29 +2089,34 @@ namespace RobTeach.Views
                             }
                             DxfVector localYAxis = normal.Cross(localXAxis).Normalize();
 
-                            // P1 at 0 degrees on the circle's plane
+                            // Find the point on the circle closest to the bottom-left corner.
+                            // This is at an angle of 225 degrees (5*PI/4 radians) in a standard 2D coordinate system.
+                            double bottomLeftAngle = 5.0 * Math.PI / 4.0;
+                            double cosBottomLeft = Math.Cos(bottomLeftAngle);
+                            double sinBottomLeft = Math.Sin(bottomLeftAngle);
                             newTrajectory.CirclePoint1.Coordinates = new DxfPoint(
-                                center.X + localXAxis.X * radius,
-                                center.Y + localXAxis.Y * radius,
-                                center.Z + localXAxis.Z * radius);
+                                center.X + (localXAxis.X * cosBottomLeft + localYAxis.X * sinBottomLeft) * radius,
+                                center.Y + (localXAxis.Y * cosBottomLeft + localYAxis.Y * sinBottomLeft) * radius,
+                                center.Z + (localXAxis.Z * cosBottomLeft + localYAxis.Z * sinBottomLeft) * radius);
 
-                            // P2 at 120 degrees (2*PI/3 radians)
+                            // P2 at 120 degrees from P1
                             double angle120 = 2.0 * Math.PI / 3.0;
-                            double cos120 = Math.Cos(angle120);
-                            double sin120 = Math.Sin(angle120);
+                            double cos120 = Math.Cos(bottomLeftAngle + angle120);
+                            double sin120 = Math.Sin(bottomLeftAngle + angle120);
                             newTrajectory.CirclePoint2.Coordinates = new DxfPoint(
                                 center.X + (localXAxis.X * cos120 + localYAxis.X * sin120) * radius,
                                 center.Y + (localXAxis.Y * cos120 + localYAxis.Y * sin120) * radius,
                                 center.Z + (localXAxis.Z * cos120 + localYAxis.Z * sin120) * radius);
 
-                            // P3 at 240 degrees (4*PI/3 radians)
+                            // P3 at 240 degrees from P1
                             double angle240 = 4.0 * Math.PI / 3.0;
-                            double cos240 = Math.Cos(angle240);
-                            double sin240 = Math.Sin(angle240);
+                            double cos240 = Math.Cos(bottomLeftAngle + angle240);
+                            double sin240 = Math.Sin(bottomLeftAngle + angle240);
                             newTrajectory.CirclePoint3.Coordinates = new DxfPoint(
                                 center.X + (localXAxis.X * cos240 + localYAxis.X * sin240) * radius,
                                 center.Y + (localXAxis.Y * cos240 + localYAxis.Y * sin240) * radius,
                                 center.Z + (localXAxis.Z * cos240 + localYAxis.Z * sin240) * radius);
+
 
                             // Store original parameters as well
                             newTrajectory.OriginalCircleCenter = center;
