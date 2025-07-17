@@ -2066,27 +2066,27 @@ namespace RobTeach.Views
                             double cosBottomLeft = Math.Cos(bottomLeftAngle);
                             double sinBottomLeft = Math.Sin(bottomLeftAngle);
                             newTrajectory.CirclePoint1.Coordinates = new DxfPoint(
-                                center.X + (localXAxis.X * cosBottomLeft + localYAxis.X * sinBottomLeft) * radius,
-                                center.Y + (localXAxis.Y * cosBottomLeft + localYAxis.Y * sinBottomLeft) * radius,
-                                center.Z + (localXAxis.Z * cosBottomLeft + localYAxis.Z * sinBottomLeft) * radius);
+                                center.X + radius * cosBottomLeft,
+                                center.Y + radius * sinBottomLeft,
+                                center.Z);
 
                             // P2 at 120 degrees from P1
                             double angle120 = 2.0 * Math.PI / 3.0;
                             double cos120 = Math.Cos(bottomLeftAngle + angle120);
                             double sin120 = Math.Sin(bottomLeftAngle + angle120);
                             newTrajectory.CirclePoint2.Coordinates = new DxfPoint(
-                                center.X + (localXAxis.X * cos120 + localYAxis.X * sin120) * radius,
-                                center.Y + (localXAxis.Y * cos120 + localYAxis.Y * sin120) * radius,
-                                center.Z + (localXAxis.Z * cos120 + localYAxis.Z * sin120) * radius);
+                                center.X + radius * cos120,
+                                center.Y + radius * sin120,
+                                center.Z);
 
                             // P3 at 240 degrees from P1
                             double angle240 = 4.0 * Math.PI / 3.0;
                             double cos240 = Math.Cos(bottomLeftAngle + angle240);
                             double sin240 = Math.Sin(bottomLeftAngle + angle240);
                             newTrajectory.CirclePoint3.Coordinates = new DxfPoint(
-                                center.X + (localXAxis.X * cos240 + localYAxis.X * sin240) * radius,
-                                center.Y + (localXAxis.Y * cos240 + localYAxis.Y * sin240) * radius,
-                                center.Z + (localXAxis.Z * cos240 + localYAxis.Z * sin240) * radius);
+                                center.X + radius * cos240,
+                                center.Y + radius * sin240,
+                                center.Z);
 
 
                             // Store original parameters as well
