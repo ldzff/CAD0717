@@ -4084,8 +4084,8 @@ namespace RobTeach.Views
                     {
                         for (int i = 0; i < trajectory.Points.Count - 1; i++)
                         {
-                            Point3D startPoint = trajectory.Points[i];
-                            Point3D endPoint = trajectory.Points[i + 1];
+                            Point3D startPoint = new Point3D(trajectory.Points[i].X, trajectory.Points[i].Y, trajectory.PolygonZ);
+                            Point3D endPoint = new Point3D(trajectory.Points[i + 1].X, trajectory.Points[i + 1].Y, trajectory.PolygonZ);
 
                             primitiveIndexInPass++;
                             // 2.b.i. Primitive Index

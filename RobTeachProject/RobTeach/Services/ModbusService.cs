@@ -290,11 +290,11 @@ namespace RobTeach.Services
             // 5. Geometry
             queue.Enqueue((float)start.X);
             queue.Enqueue((float)start.Y);
-            queue.Enqueue((float)start.Z);
+            queue.Enqueue((float)parentTrajectory.PolygonZ);
             queue.Enqueue(0f); queue.Enqueue(0f); queue.Enqueue(0f); // Rx, Ry, Rz for start
             queue.Enqueue((float)end.X);
             queue.Enqueue((float)end.Y);
-            queue.Enqueue((float)end.Z);
+            queue.Enqueue((float)parentTrajectory.PolygonZ);
             queue.Enqueue(0f); queue.Enqueue(0f); queue.Enqueue(0f); // Rx, Ry, Rz for end
             // 6. Filler
             for (int j = 0; j < 3; j++) queue.Enqueue(0.0f);
