@@ -30,11 +30,11 @@
 
         <!-- Load DXF and Actions Button Bar -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5,5,5,0" Background="{StaticResource PanelBackgroundBrush}">
-            <Button Content="Load DXF" Click="LoadDxfButton_Click" Name="LoadDxfButton" Padding="5" Margin="0,0,5,0"/>
-            <Button Content="Save Config" Name="SaveConfigButton" Click="SaveConfigButton_Click" Padding="5" Margin="0,0,5,0"/>
-            <Button Content="Load Config" Name="LoadConfigButton" Click="LoadConfigButton_Click" Padding="5" Margin="0,0,5,0"/>
-            <Button Content="Fit to View" Click="FitToViewButton_Click" Name="FitToViewButton" Padding="5" Margin="0,0,5,0"/>
-            <Button Content="Show 3D View" Name="Show3DViewButton" Click="Show3DViewButton_Click" Padding="5" Margin="0,0,5,0" Visibility="Collapsed"/>
+            <Button Content="Load DXF" Click="LoadDxfButton_Click" Name="LoadDxfButton" Padding="5" Margin="0,0,5,0" FontSize="14"/>
+            <Button Content="Save Config" Name="SaveConfigButton" Click="SaveConfigButton_Click" Padding="5" Margin="0,0,5,0" FontSize="14"/>
+            <Button Content="Load Config" Name="LoadConfigButton" Click="LoadConfigButton_Click" Padding="5" Margin="0,0,5,0" FontSize="14"/>
+            <Button Content="Fit to View" Click="FitToViewButton_Click" Name="FitToViewButton" Padding="5" Margin="0,0,5,0" FontSize="14"/>
+            <Button Content="Show 3D View" Name="Show3DViewButton" Click="Show3DViewButton_Click" Padding="5" Margin="0,0,5,0" Visibility="Collapsed" FontSize="14"/>
             <ComboBox Name="LanguageComboBox" Width="100" Margin="5,0,0,0" VerticalAlignment="Center">
                 <ComboBoxItem Content="English"/>
                 <ComboBoxItem Content="中文"/>
