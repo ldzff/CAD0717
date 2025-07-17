@@ -9,7 +9,8 @@
         Title="RobTeach Application" Height="550" Width="850"
         Closing="MainWindow_Closing"
         WindowState="Maximized"
-        GlowBrush="{DynamicResource MahApps.Brushes.Accent}">
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
+        FontFamily="Microsoft YaHei UI">
     <mah:MetroWindow.Resources>
         <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#FF2D2D30"/>
         <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#FF3F3F46"/>

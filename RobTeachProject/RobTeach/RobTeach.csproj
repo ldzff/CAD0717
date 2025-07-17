@@ -8,6 +8,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>RobTeach</RootNamespace>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <ApplicationIcon>ccdq1.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
