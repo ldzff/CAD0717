@@ -254,6 +254,11 @@ namespace RobTeach.Services
                 }
             }
 
+            if (dataQueue.Count > 750)
+            {
+                return ModbusResponse.Fail("Error: Data length exceeds the maximum limit of 750.");
+            }
+
             try
             {
                 // Calculate checksum

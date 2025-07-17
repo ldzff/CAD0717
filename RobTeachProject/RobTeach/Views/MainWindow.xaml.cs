@@ -2725,6 +2725,11 @@ namespace RobTeach.Views
                 StatusTextBlock.Text = $"Failed to send configuration: {response.Message}";
                 ModbusStatusTextBlock.Text = response.Message; // Update Modbus status as well
                 StartTestRunButton.IsEnabled = false;
+
+                if (response.Message.Contains("exceeds the maximum limit"))
+                {
+                    MessageBox.Show(response.Message, "Data Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
