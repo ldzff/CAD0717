@@ -2060,32 +2060,21 @@ namespace RobTeach.Views
                             }
                             DxfVector localYAxis = normal.Cross(localXAxis).Normalize();
 
-                            // New logic to find the bottom-left intersection point
-                            // The line passing through the center at 45 degrees to the horizontal is y-cy = x-cx.
-                            // The intersections with the circle (x-cx)^2 + (y-cy)^2 = r^2 are where 2*(x-cx)^2 = r^2.
-                            // So, x-cx = +/- r/sqrt(2) and y-cy = +/- r/sqrt(2).
-                            // The bottom-left point is (cx - r/sqrt(2), cy - r/sqrt(2)).
-                            // We calculate this point in the circle's local 3D coordinate system.
-                            double offset = radius / Math.Sqrt(2);
-                            DxfVector p1_offset_vec = (localXAxis * -offset) + (localYAxis * -offset);
+                            // Corrected logic to find the bottom-left intersection point
+                            // The angle for the bottom-left point (225 degrees or -135 degrees) is used to find the offset vector.
+                            double angleP1_rad = -135.0 * Math.PI / 180.0; // -135 degrees in radians
+
+                            // Calculate the offset vector for the first point in the circle's local coordinate system
+                            DxfVector p1_offset_vec = (localXAxis * (radius * Math.Cos(angleP1_rad))) + (localYAxis * (radius * Math.Sin(angleP1_rad)));
                             newTrajectory.CirclePoint1.Coordinates = center + p1_offset_vec;
 
+                            // P2 and P3 are rotated by 120 and 240 degrees from P1's angle.
+                            double angleP2_rad = angleP1_rad + (120.0 * Math.PI / 180.0);
+                            double angleP3_rad = angleP1_rad + (240.0 * Math.PI / 180.0);
 
-                            // P2 and P3 are rotated by 120 and 240 degrees from P1 around the center.
-                            // We can achieve this by rotating the local X and Y axes around the normal vector.
-
-                            // Define angles for P2 and P3 relative to P1's angle (-135 or 225 degrees)
-                            double angleP1 = -135.0; // Angle for the bottom-left point in degrees
-                            double angleP2 = angleP1 + 120.0;
-                            double angleP3 = angleP1 + 240.0;
-
-                            // Convert angles to radians for Math.Cos/Sin
-                            double radP2 = angleP2 * Math.PI / 180.0;
-                            double radP3 = angleP3 * Math.PI / 180.0;
-
-                            // Calculate P2 and P3 coordinates in the local 2D plane of the circle
-                            DxfVector p2_offset_vec = (localXAxis * (radius * Math.Cos(radP2))) + (localYAxis * (radius * Math.Sin(radP2)));
-                            DxfVector p3_offset_vec = (localXAxis * (radius * Math.Cos(radP3))) + (localYAxis * (radius * Math.Sin(radP3)));
+                            // Calculate offset vectors for P2 and P3
+                            DxfVector p2_offset_vec = (localXAxis * (radius * Math.Cos(angleP2_rad))) + (localYAxis * (radius * Math.Sin(angleP2_rad)));
+                            DxfVector p3_offset_vec = (localXAxis * (radius * Math.Cos(angleP3_rad))) + (localYAxis * (radius * Math.Sin(angleP3_rad)));
 
                             newTrajectory.CirclePoint2.Coordinates = center + p2_offset_vec;
                             newTrajectory.CirclePoint3.Coordinates = center + p3_offset_vec;
