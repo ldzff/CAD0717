@@ -3709,14 +3709,27 @@ namespace RobTeach.Views
                         {
                             if (availableDocEntities[j] is DxfLwPolyline polyline)
                             {
-                                // A simple comparison for polygons could be to check if they have the same number of vertices
-                                // and if the first vertex is the same. This is not a robust check, but it's a start.
-                                if (polyline.Vertices.Count == trajectory.Points.Count &&
-                                    PointEquals(new DxfPoint(polyline.Vertices[0].X, polyline.Vertices[0].Y, polyline.Elevation), new DxfPoint(trajectory.Points[0].X, trajectory.Points[0].Y, trajectory.PolygonZ)))
+                                // More robust comparison for polygons
+                                if (polyline.Vertices.Count == trajectory.Points.Count)
                                 {
-                                    matchedEntity = availableDocEntities[j];
-                                    matchedEntityIndexInAvailableList = j;
-                                    break;
+                                    bool allPointsMatch = true;
+                                    for (int k = 0; k < polyline.Vertices.Count; k++)
+                                    {
+                                        var dxfPoint = new DxfPoint(polyline.Vertices[k].X, polyline.Vertices[k].Y, polyline.Elevation);
+                                        var trajectoryPoint = new DxfPoint(trajectory.Points[k].X, trajectory.Points[k].Y, trajectory.PolygonZ);
+                                        if (!PointEquals(dxfPoint, trajectoryPoint))
+                                        {
+                                            allPointsMatch = false;
+                                            break;
+                                        }
+                                    }
+
+                                    if (allPointsMatch)
+                                    {
+                                        matchedEntity = availableDocEntities[j];
+                                        matchedEntityIndexInAvailableList = j;
+                                        break;
+                                    }
                                 }
                             }
                         }
