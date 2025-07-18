@@ -3640,10 +3640,14 @@ namespace RobTeach.Views
                 case DxfLwPolyline poly1 when entity2 is DxfLwPolyline poly2:
                     Debug.WriteLine($"[DEBUG] LWPolylineCompare: VCount1={poly1.Vertices.Count}, VCount2={poly2.Vertices.Count}, Closed1={poly1.IsClosed}, Closed2={poly2.IsClosed}");
                     if (poly1.Vertices.Count != poly2.Vertices.Count || poly1.IsClosed != poly2.IsClosed) return false;
-                    for(int i=0; i < poly1.Vertices.Count; i++)
+
+                    var poly1Vertices = poly1.Vertices.OrderBy(v => v.X).ThenBy(v => v.Y).ToList();
+                    var poly2Vertices = poly2.Vertices.OrderBy(v => v.X).ThenBy(v => v.Y).ToList();
+
+                    for(int i=0; i < poly1Vertices.Count; i++)
                     {
-                        var v1 = poly1.Vertices[i];
-                        var v2 = poly2.Vertices[i];
+                        var v1 = poly1Vertices[i];
+                        var v2 = poly2Vertices[i];
                         // LwPolyline vertices are DxfLwPolylineVertex, which have X, Y, Bulge. Z is from polyline's Elevation.
                         // Using PointEquals for X,Y comparison by creating temporary DxfPoints.
                         bool xyMatch = PointEquals(new DxfPoint(v1.X, v1.Y, 0), new DxfPoint(v2.X, v2.Y, 0), tolerance);
